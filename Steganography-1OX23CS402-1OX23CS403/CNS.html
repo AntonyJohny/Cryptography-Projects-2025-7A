@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Combined Cipher Steganography</title>
+<style>
+    body {
+        margin: 0; font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #4b2a61, #c94b1f);
+        color: #f5a623;
+    }
+    .container {
+        max-width: 960px;
+        margin: 40px auto;
+        background-color: #260f1d;
+        border-radius: 12px;
+        padding: 20px 40px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    }
+    h1 {
+        text-align: center;
+        font-weight: 900;
+        margin-bottom: 5px;
+    }
+    p.description {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 30px;
+        font-size: 14px;
+        color: #f8f5f5;
+    }
+    .flexbox {
+        display: flex;
+        gap: 30px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .box {
+        flex: 1 1 440px;
+        background-color: #3c262e;
+        padding: 20px;
+        border-radius: 8px;
+        color: #fbc02d;
+    }
+    .box h3 {
+        font-weight: 700;
+        margin-top: 0;
+        margin-bottom: 20px;
+    }
+    label {
+        font-size: 12px;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 6px;
+        color: #f8d944;
+    }
+    textarea, select, input[type="text"], input[type="number"], input[type="file"] {
+        width: 100%;
+        border-radius: 4px;
+        border: none;
+        padding: 10px;
+        font-size: 14px;
+        box-sizing: border-box;
+        margin-bottom: 20px;
+    }
+    textarea {
+        resize: vertical;
+        height: 70px;
+        font-family: Arial, sans-serif;
+        color:#3c262e;
+    }
+    select {
+        background-color: white;
+        color: black;
+    }
+    .button {
+        background-color: #fbb829;
+        border: none;
+        color: #3c262e;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 12px;
+        width: 100%;
+        border-radius: 4px;
+        font-size: 14px;
+        transition: background-color 0.3s ease;
+    }
+    .button:hover:not(:disabled) {
+        background-color: #d9a422;
+    }
+    .button:disabled {
+        background-color: #98781f;
+        cursor: not-allowed;
+    }
+    .image-preview {
+        text-align: center;
+        color: #fabf2f;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    .image-holder {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .image-holder img {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 4px;
+        border: 2px solid #fbb829;
+        margin-bottom: 10px;
+    }
+    small.download-text {
+        color: #fabf2f;
+        font-weight: 700;
+        font-size: 12px;
+        text-align: center;
+        display: block;
+        cursor: pointer;
+        user-select: none;
+    }
+    .decrypted-message {
+        background-color: #4f372f;
+        color: #f8f8f8;
+        padding: 15px;
+        border-radius: 6px;
+        font-size: 13px;
+        line-height: 1.3;
+        min-height: 50px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        margin-top: 5px;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Combined Cipher &amp; Steganography</h1>
+    <p class="description">Encrypt secret messages using one of the classical ciphers and hide them inside images</p>
+    <div class="flexbox">
+        <div class="box">
+            <h3>Encrypt &amp; Hide Message</h3>
+            <label for="secret-message">Secret Message:</label>
+            <textarea id="secret-message" placeholder="Enter your secret message">chandana</textarea>
+
+            <label for="encryption-method">Encryption Method:</label>
+            <select id="encryption-method">
+                <option value="caesar">Caesar Cipher</option>
+                <option value="playfair">Playfair Cipher</option>
+                <option value="hill">Hill Cipher (2x2)</option>
+            </select>
+
+            <div id="caesar-key-container" style="display:block;">
+                <label for="caesar-shift">Shift Key (for Caesar Cipher, 1-25):</label>
+                <input type="number" id="caesar-shift" min="1" max="25" value="3" />
+            </div>
+
+            <div id="playfair-key-container" style="display:none;">
+                <label for="playfair-key">Playfair Key (alphabet letters only):</label>
+                <input type="text" id="playfair-key" maxlength="25" placeholder="e.g. SECRET" />
+            </div>
+
+            <div id="hill-key-container" style="display:none;">
+                <label for="hill-key">Hill Key - Enter 4 numbers (mod 26) separated by space (2x2 matrix):</label>
+                <input type="text" id="hill-key" placeholder="e.g. 3 3 2 5" />
+            </div>
+
+            <label for="upload-image-encrypt">Upload Image to Hide Message In:</label>
+            <input type="file" id="upload-image-encrypt" accept="image/*" />
+
+            <button class="button" id="encrypt-btn" disabled>Encrypt &amp; Hide Message</button>
+
+            <div class="image-preview" id="encrypt-image-label" style="display:none;">Image with Hidden Message:</div>
+            <div class="image-holder" id="encrypted-image-holder" style="display:none;">
+                <img id="encrypted-image" alt="Image with Hidden Message" />
+            </div>
+            <small class="download-text" id="download-link" style="display:none;" tabindex="0">Download Image with Hidden Message</small>
+        </div>
+
+        <div class="box">
+            <h3>Extract &amp; Decrypt Message</h3>
+            <label for="upload-image-decrypt">Upload Image with Hidden Message:</label>
+            <input type="file" id="upload-image-decrypt" accept="image/*" />
+
+            <label for="decrypt-encryption-method">Decryption Method:</label>
+            <select id="decrypt-encryption-method">
+                <option value="caesar">Caesar Cipher</option>
+                <option value="playfair">Playfair Cipher</option>
+                <option value="hill">Hill Cipher (2x2)</option>
+            </select>
+
+            <div id="decrypt-caesar-key-container" style="display:block;">
+                <label for="decrypt-caesar-shift">Shift Key (for Caesar Cipher, 1-25):</label>
+                <input type="number" id="decrypt-caesar-shift" min="1" max="25" />
+            </div>
+
+            <div id="decrypt-playfair-key-container" style="display:none;">
+                <label for="decrypt-playfair-key">Playfair Key (alphabet letters only):</label>
+                <input type="text" id="decrypt-playfair-key" maxlength="25" />
+            </div>
+
+            <div id="decrypt-hill-key-container" style="display:none;">
+                <label for="decrypt-hill-key">Hill Key - Enter 4 numbers (mod 26) separated by space (2x2 matrix):</label>
+                <input type="text" id="decrypt-hill-key" />
+            </div>
+
+            <button class="button" id="decrypt-btn" disabled>Extract &amp; Decrypt Message</button>
+
+            <div><strong>Decrypted Message:</strong></div>
+            <div class="decrypted-message" id="decrypted-message">Your decrypted message will appear here...</div>
+        </div>
+    </div>
+    <canvas id="canvas" style="display:none;"></canvas>
+</div>
+
+<script>
+// Utility: Clean and uppercase letters, replace J with I
+function normalizeString(str) {
+    return str.toUpperCase().replace(/J/g, 'I').replace(/[^A-Z]/g, '');
+}
+
+// ---- Caesar Cipher ----
+function caesarEncrypt(text, shift) {
+    shift = shift % 26;
+    return text.toUpperCase().split('').map(c => {
+        let code = c.charCodeAt(0);
+        if(code >= 65 && code<=90){
+            return String.fromCharCode((code - 65 + shift + 26) % 26 + 65);
+        }
+        return c;
+    }).join('');
+}
+
+function caesarDecrypt(text, shift) {
+    return caesarEncrypt(text, -shift);
+}
+
+// ---- Playfair Cipher ----
+function createPlayfairMatrix(key) {
+    key = normalizeString(key);
+    let matrix = [];
+    let used = new Set();
+    for(let c of key){
+        if(!used.has(c)){
+            matrix.push(c);
+            used.add(c);
+        }
+    }
+    for(let i=0; i<26; i++){
+        let c = String.fromCharCode(65 + i);
+        if(c === 'J') continue; // skip J
+        if(!used.has(c)){
+            matrix.push(c);
+            used.add(c);
+        }
+    }
+    return [
+        matrix.slice(0,5),
+        matrix.slice(5,10),
+        matrix.slice(10,15),
+        matrix.slice(15,20),
+        matrix.slice(20,25)
+    ];
+}
+
+function findPosition(matrix, c) {
+    for(let r=0;r<5;r++){
+        for(let col=0; col<5; col++){
+            if(matrix[r][col] === c) return {r, col};
+        }
+    }
+    return null;
+}
+
+function playfairPrepareText(text) {
+    text = normalizeString(text).replace(/J/g,'I');
+    let result = '';
+    for(let i=0; i<text.length; i++){
+        let a = text[i];
+        let b = text[i+1] || 'X';
+        if(a === b){
+            result += a + 'X';
+        } else {
+            result += a + (b || 'X');
+            i++;
+        }
+    }
+    if(result.length % 2 !== 0) result += 'X';
+    return result;
+}
+
+function playfairEncrypt(text, key) {
+    let matrix = createPlayfairMatrix(key);
+    let preparedText = playfairPrepareText(text);
+    let result = '';
+
+    for(let i=0; i<preparedText.length; i+=2){
+        let a = preparedText[i];
+        let b = preparedText[i+1];
+        let posA = findPosition(matrix,a);
+        let posB = findPosition(matrix,b);
+        if(posA.r === posB.r){
+            // same row
+            result += matrix[posA.r][(posA.col+1)%5];
+            result += matrix[posB.r][(posB.col+1)%5];
+        } else if(posA.col === posB.col){
+            // same col
+            result += matrix[(posA.r+1)%5][posA.col];
+            result += matrix[(posB.r+1)%5][posB.col];
+        } else {
+            // rectangle
+            result += matrix[posA.r][posB.col];
+            result += matrix[posB.r][posA.col];
+        }
+    }
+    return result;
+}
+
+function playfairDecrypt(text, key) {
+    let matrix = createPlayfairMatrix(key);
+    let result = '';
+
+    for(let i=0; i<text.length; i+=2){
+        let a = text[i];
+        let b = text[i+1];
+        let posA = findPosition(matrix,a);
+        let posB = findPosition(matrix,b);
+        if(posA.r === posB.r){
+            // same row
+            result += matrix[posA.r][(posA.col+4)%5];
+            result += matrix[posB.r][(posB.col+4)%5];
+        } else if(posA.col === posB.col){
+            // same col
+            result += matrix[(posA.r+4)%5][posA.col];
+            result += matrix[(posB.r+4)%5][posB.col];
+        } else {
+            // rectangle
+            result += matrix[posA.r][posB.col];
+            result += matrix[posB.r][posA.col];
+        }
+    }
+    return result;
+}
+
+// ---- Hill Cipher (2x2 matrix) ----
+// Helper matrix functions
+function mod(n, m) {
+    return ((n % m) + m) % m;
+}
+function modInverse(a, m) {
+    a = mod(a, m);
+    for(let x = 1; x < m; x++){
+        if(mod(a * x, m) === 1) return x;
+    }
+    return -1;
+}
+function hillPrepareText(text) {
+    text = normalizeString(text);
+    if(text.length % 2 !== 0) text += 'X';
+    return text;
+}
+function hillEncrypt(text, keyMatrix) {
+    text = hillPrepareText(text);
+    let result = '';
+    for(let i=0; i<text.length; i+=2){
+        let v = [text.charCodeAt(i)-65, text.charCodeAt(i+1)-65];
+        let c1 = mod(keyMatrix[0][0]*v[0] + keyMatrix[0][1]*v[1], 26);
+        let c2 = mod(keyMatrix[1][0]*v[0] + keyMatrix[1][1]*v[1], 26);
+        result += String.fromCharCode(c1+65) + String.fromCharCode(c2+65);
+    }
+    return result;
+}
+function hillDecrypt(text, keyMatrix) {
+    // Calculate inverse matrix mod 26
+    const det = mod(keyMatrix[0][0]*keyMatrix[1][1] - keyMatrix[0][1]*keyMatrix[1][0], 26);
+    const detInv = modInverse(det, 26);
+    if(detInv === -1) return null;
+
+    let invMatrix = [
+        [mod(detInv * keyMatrix[1][1], 26), mod(-detInv * keyMatrix[0][1],26)],
+        [mod(-detInv * keyMatrix[1][0],26), mod(detInv * keyMatrix[0][0],26)]
+    ];
+
+    text = text.toUpperCase();
+    let result = '';
+    for(let i=0; i<text.length; i+=2){
+        let v = [text.charCodeAt(i)-65, text.charCodeAt(i+1)-65];
+        let p1 = mod(invMatrix[0][0]*v[0] + invMatrix[0][1]*v[1], 26);
+        let p2 = mod(invMatrix[1][0]*v[0] + invMatrix[1][1]*v[1], 26);
+        result += String.fromCharCode(p1+65) + String.fromCharCode(p2+65);
+    }
+    return result;
+}
+
+// ---- Steganography Utility ----
+function stringToBinary(str) {
+    return str.split('').map(c => {
+        let bin = c.charCodeAt(0).toString(2);
+        return '00000000'.substring(bin.length) + bin;
+    }).join('');
+}
+function binaryToString(binStr){
+    let result = '';
+    for(let i=0; i<binStr.length; i+=8){
+        let byte = binStr.substring(i, i+8);
+        if(byte.length < 8) break;
+        result += String.fromCharCode(parseInt(byte, 2));
+    }
+    return result;
+}
+
+function hideMessageInImageData(imageData, message) {
+    const binMessage = stringToBinary(message);
+    // store length (32 bits) first
+    const messageLength = binMessage.length;
+    const binLength = messageLength.toString(2).padStart(32, '0');
+    const fullMessage = binLength + binMessage;
+
+    if(fullMessage.length > (imageData.data.length/4)){
+        alert("Message too long for this image. Use bigger image or shorter message.");
+        return null;
+    }
+
+    let data = imageData.data;
+    let bitIndex = 0;
+    for(let i=0; i < data.length; i +=4){
+        if(bitIndex < fullMessage.length){
+            let bit = fullMessage.charAt(bitIndex);
+            data[i] = (data[i] & 0xFE) | (bit === '1' ? 1 : 0);
+            bitIndex ++;
+        } else {
+            break;
+        }
+    }
+    return imageData;
+}
+
+function extractMessageFromImageData(imageData){
+    const data = imageData.data;
+    // first 32 bits length
+    let lengthBits = '';
+    for(let i=0; i< 32*4; i +=4){
+        lengthBits += (data[i] & 1).toString();
+    }
+    const messageLength = parseInt(lengthBits, 2);
+    if(isNaN(messageLength) || messageLength <= 0){
+        return null;
+    }
+    let messageBits = '';
+    for(let i=32*4; i < (32*4) + (messageLength*4); i+=4){
+        messageBits += (data[i] & 1).toString();
+    }
+    return binaryToString(messageBits);
+}
+
+// ---- DOM Elements ----
+const secretMessageInput = document.getElementById('secret-message');
+const encryptionMethodSelect = document.getElementById('encryption-method');
+const caesarKeyContainer = document.getElementById('caesar-key-container');
+const playfairKeyContainer = document.getElementById('playfair-key-container');
+const hillKeyContainer = document.getElementById('hill-key-container');
+const caesarShiftInput = document.getElementById('caesar-shift');
+const playfairKeyInput = document.getElementById('playfair-key');
+const hillKeyInput = document.getElementById('hill-key');
+const uploadImageEncrypt = document.getElementById('upload-image-encrypt');
+const encryptBtn = document.getElementById('encrypt-btn');
+const encryptImageLabel = document.getElementById('encrypt-image-label');
+const encryptedImageHolder = document.getElementById('encrypted-image-holder');
+const encryptedImage = document.getElementById('encrypted-image');
+const downloadLink = document.getElementById('download-link');
+
+const uploadImageDecrypt = document.getElementById('upload-image-decrypt');
+const decryptEncryptionMethodSelect = document.getElementById('decrypt-encryption-method');
+const decryptCaesarKeyContainer = document.getElementById('decrypt-caesar-key-container');
+const decryptPlayfairKeyContainer = document.getElementById('decrypt-playfair-key-container');
+const decryptHillKeyContainer = document.getElementById('decrypt-hill-key-container');
+const decryptCaesarShiftInput = document.getElementById('decrypt-caesar-shift');
+const decryptPlayfairKeyInput = document.getElementById('decrypt-playfair-key');
+const decryptHillKeyInput = document.getElementById('decrypt-hill-key');
+const decryptBtn = document.getElementById('decrypt-btn');
+const decryptedMessageDiv = document.getElementById('decrypted-message');
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+// --- Show/Hide key input fields depending on cipher ---
+function updateKeyInputVisibility() {
+    const val = encryptionMethodSelect.value;
+    caesarKeyContainer.style.display = val === 'caesar' ? 'block' : 'none';
+    playfairKeyContainer.style.display = val === 'playfair' ? 'block' : 'none';
+    hillKeyContainer.style.display = val === 'hill' ? 'block' : 'none';
+}
+function updateDecryptKeyVisibility() {
+    const val = decryptEncryptionMethodSelect.value;
+    decryptCaesarKeyContainer.style.display = val === 'caesar' ? 'block' : 'none';
+    decryptPlayfairKeyContainer.style.display = val === 'playfair' ? 'block' : 'none';
+    decryptHillKeyContainer.style.display = val === 'hill' ? 'block' : 'none';
+}
+
+encryptionMethodSelect.addEventListener('change', () => {
+    updateKeyInputVisibility();
+    validateEncryptBtn();
+});
+decryptEncryptionMethodSelect.addEventListener('change', () => {
+    updateDecryptKeyVisibility();
+    validateDecryptBtn();
+});
+
+// Upload validations & button enabling
+let loadedImageForEncrypt = null;
+
+uploadImageEncrypt.addEventListener('change', function(){
+    resetEncryptSection();
+    if(uploadImageEncrypt.files.length === 0){
+        encryptBtn.disabled = true;
+        loadedImageForEncrypt = null;
+        return;
+    }
+    let file = uploadImageEncrypt.files[0];
+    let img = new Image();
+    img.onload = function(){
+        loadedImageForEncrypt = img;
+        validateEncryptBtn();
+    };
+    img.onerror = function(){
+        alert("Invalid image file.");
+        uploadImageEncrypt.value = '';
+        encryptBtn.disabled = true;
+        loadedImageForEncrypt = null;
+    }
+    img.src = URL.createObjectURL(file);
+});
+
+secretMessageInput.addEventListener('input', validateEncryptBtn);
+caesarShiftInput.addEventListener('input', validateEncryptBtn);
+playfairKeyInput.addEventListener('input', validateEncryptBtn);
+hillKeyInput.addEventListener('input', validateEncryptBtn);
+
+function validateEncryptBtn(){
+    const msg = secretMessageInput.value.trim();
+    const hasImage = uploadImageEncrypt.files.length > 0;
+    const cipher = encryptionMethodSelect.value;
+    let validKey = false;
+
+    if(cipher === 'caesar'){
+        let shift = parseInt(caesarShiftInput.value);
+        validKey = !isNaN(shift) && shift >=1 && shift <=25;
+    }
+    if(cipher === 'playfair'){
+        let key = playfairKeyInput.value.trim();
+        validKey = /^[A-Za-z]+$/.test(key);
+    }
+    if(cipher === 'hill'){
+        let key = hillKeyInput.value.trim();
+        // needs 4 numbers 0-25 separated by space
+        validKey = /^(\d{1,2}\s){3}\d{1,2}$/.test(key);
+        if(validKey){
+            let parts = key.split(' ').map(Number);
+            validKey = parts.every(n => n>=0 && n<26);
+            // check determinant not 0 mod 26
+            if(validKey){
+                let det = (parts[0]*parts[3] - parts[1]*parts[2]) % 26;
+                validKey = det !== 0 && modInverse(det,26) !== -1;
+            }
+        }
+    }
+    encryptBtn.disabled = !(msg.length > 0 && hasImage && validKey);
+}
+
+uploadImageDecrypt.addEventListener('change', () => {
+    resetDecryptSection();
+    validateDecryptBtn();
+});
+decryptCaesarShiftInput.addEventListener('input', validateDecryptBtn);
+decryptPlayfairKeyInput.addEventListener('input', validateDecryptBtn);
+decryptHillKeyInput.addEventListener('input', validateDecryptBtn);
+decryptEncryptionMethodSelect.addEventListener('change', () => {
+    updateDecryptKeyVisibility();
+    validateDecryptBtn();
+});
+
+function validateDecryptBtn(){
+    const hasImage = uploadImageDecrypt.files.length > 0;
+    const cipher = decryptEncryptionMethodSelect.value;
+    let validKey = false;
+
+    if(cipher === 'caesar'){
+        let shift = parseInt(decryptCaesarShiftInput.value);
+        validKey = !isNaN(shift) && shift >=1 && shift <=25;
+    }
+    if(cipher === 'playfair'){
+        let key = decryptPlayfairKeyInput.value.trim();
+        validKey = /^[A-Za-z]+$/.test(key);
+    }
+    if(cipher === 'hill'){
+        let key = decryptHillKeyInput.value.trim();
+        validKey = /^(\d{1,2}\s){3}\d{1,2}$/.test(key);
+        if(validKey){
+            let parts = key.split(' ').map(Number);
+            validKey = parts.every(n => n>=0 && n<26);
+            if(validKey){
+                let det = (parts[0]*parts[3] - parts[1]*parts[2]) % 26;
+                validKey = det !== 0 && modInverse(det,26) !== -1;
+            }
+        }
+    }
+    decryptBtn.disabled = !(hasImage && validKey);
+}
+
+// Reset displays
+function resetEncryptSection(){
+    encryptedImageHolder.style.display = 'none';
+    encryptImageLabel.style.display = 'none';
+    downloadLink.style.display = 'none';
+    encryptedImage.src = '';
+}
+function resetDecryptSection(){
+    decryptedMessageDiv.textContent = 'Your decrypted message will appear here...';
+}
+
+// --- Encrypt & Hide ---
+encryptBtn.addEventListener('click', () => {
+    const message = secretMessageInput.value.trim();
+    const cipher = encryptionMethodSelect.value;
+    if(!loadedImageForEncrypt) {
+        alert("Please upload a valid image to hide message.");
+        return;
+    }
+    let encryptedText = '';
+    // Encrypt message with selected cipher
+    if(cipher === 'caesar'){
+        let shift = parseInt(caesarShiftInput.value);
+        encryptedText = caesarEncrypt(message, shift);
+    }
+    else if(cipher === 'playfair'){
+        let key = playfairKeyInput.value.trim();
+        encryptedText = playfairEncrypt(message, key);
+    }
+    else if(cipher === 'hill'){
+        let keyText = hillKeyInput.value.trim();
+        let parts = keyText.split(' ').map(Number);
+        let keyMatrix = [[parts[0], parts[1]],[parts[2], parts[3]]];
+        encryptedText = hillEncrypt(message, keyMatrix);
+    }
+
+    // Draw image on canvas
+    canvas.width = loadedImageForEncrypt.width;
+    canvas.height = loadedImageForEncrypt.height;
+    ctx.drawImage(loadedImageForEncrypt, 0, 0);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+    // Hide encryptedText in imageData
+    const modImageData = hideMessageInImageData(imageData, encryptedText);
+    if(!modImageData) return;
+
+    // Put modified image data back
+    ctx.putImageData(modImageData, 0, 0);
+
+    const dataURL = canvas.toDataURL("image/png");
+
+    // Show stego image and download link
+    encryptedImage.src = dataURL;
+    encryptedImageHolder.style.display = 'block';
+    encryptImageLabel.style.display = 'block';
+    downloadLink.style.display = 'block';
+
+    downloadLink.onclick = () => {
+        const a = document.createElement('a');
+        a.href = dataURL;
+        a.download = 'image_with_hidden_message.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+});
+
+// --- Extract & Decrypt ---
+decryptBtn.addEventListener('click', () => {
+    resetDecryptSection();
+    if(uploadImageDecrypt.files.length === 0){
+        alert("Please upload an image with hidden message.");
+        return;
+    }
+    const cipher = decryptEncryptionMethodSelect.value;
+
+    const file = uploadImageDecrypt.files[0];
+    let img = new Image();
+    img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const hiddenEncryptedMessage = extractMessageFromImageData(imageData);
+
+        if(!hiddenEncryptedMessage){
+            decryptedMessageDiv.textContent = '[No hidden message found or invalid image]';
+            return;
+        }
+
+        let decryptedText = '';
+        if(cipher === 'caesar'){
+            let shift = parseInt(decryptCaesarShiftInput.value);
+            decryptedText = caesarDecrypt(hiddenEncryptedMessage, shift);
+        }
+        else if(cipher === 'playfair'){
+            let key = decryptPlayfairKeyInput.value.trim();
+            decryptedText = playfairDecrypt(hiddenEncryptedMessage, key);
+        }
+        else if(cipher === 'hill'){
+            let keyText = decryptHillKeyInput.value.trim();
+            let parts = keyText.split(' ').map(Number);
+            let keyMatrix = [[parts[0], parts[1]], [parts[2], parts[3]]];
+            let dec = hillDecrypt(hiddenEncryptedMessage, keyMatrix);
+            if(dec === null){
+                decryptedMessageDiv.textContent = '[Invalid Hill cipher key or matrix not invertible]';
+                return;
+            }
+            decryptedText = dec;
+        }
+
+        decryptedMessageDiv.textContent = decryptedText || '[Decryption failed]';
+    };
+    img.onerror = () => {
+        alert("Invalid image file.");
+        decryptedMessageDiv.textContent = '';
+    };
+    img.src = URL.createObjectURL(file);
+});
+
+// Initialize visibility
+updateKeyInputVisibility();
+updateDecryptKeyVisibility();
+validateEncryptBtn();
+validateDecryptBtn();
+
+</script>
+</body>
+</html>
