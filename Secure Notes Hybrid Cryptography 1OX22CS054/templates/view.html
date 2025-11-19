@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>{{ note.title }}</h2>
+  <p><strong>CIPHERTEXT (stored):</strong></p>
+  <pre>{{ note.ciphertext }}</pre>
+  <hr>
+  <h3>Decrypt</h3>
+  <form method="post">
+    <label>Caesar shift used<br><input name="caesar_shift" value="3" /></label><br>
+    <label>Vigenere passphrase to decrypt<br><input name="vkey"/></label><br>
+    <label>Playfair keyword to decrypt<br><input name="pkey"/></label><br>
+    <button type="submit">Try Decrypt</button>
+  </form>
+
+  {% if decrypted is not none %}
+    <h3>Decrypted result</h3>
+    <pre>{{ decrypted }}</pre>
+  {% endif %}
+  <p><a href="{{ url_for('index') }}">Back</a></p>
+{% endblock %}
