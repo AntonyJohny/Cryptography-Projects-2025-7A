@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+  <a href="{{ url_for('new_note') }}" class="btn">Create new secure note</a>
+  <h2>Saved notes</h2>
+  {% if notes %}
+    <ul>
+      {% for n in notes %}
+        <li>
+          <strong>{{ n.title }}</strong>
+          — <a href="{{ url_for('view_note', note_id=n.id) }}">View / Decrypt</a>
+          — ciphertext length: {{ n.ciphertext|length }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No notes yet.</p>
+  {% endif %}
+{% endblock %}

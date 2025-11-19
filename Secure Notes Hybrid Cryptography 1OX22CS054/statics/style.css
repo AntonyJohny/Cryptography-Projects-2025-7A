@@ -1,0 +1,8 @@
+body { font-family: Arial, sans-serif; max-width: 900px; margin: 24px auto; line-height:1.5; }
+header h1 { margin: 0; font-size: 22px; color: #222; }
+.btn { display:inline-block; margin:8px 0; padding:8px 12px; background:#2b7; color:#033; text-decoration:none; border-radius:6px;}
+form label { display:block; margin:10px 0; }
+pre { background:#f6f6f6; padding:12px; overflow:auto; }
+.flash-success { background:#e6ffea; padding:8px; border-left:4px solid #2b7; margin-bottom:12px; }
+.flash-danger { background:#ffe6e6; padding:8px; border-left:4px solid #c33; margin-bottom:12px; }
+footer { margin-top: 24px; color:#888; font-size: 13px; }
