@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Encrypt Medical Report{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm p-4 mb-5">
+            <h2 class="text-center mb-4">Encrypt Medical Report</h2>
+
+            <form id="encryptForm" method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label">Upload Medical Report</label>
+                    <input type="file" class="form-control" name="file" id="fileUpload" required>
+                    <small class="text-muted">Drag & drop or select a file (.txt, .pdf)</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Vigenère Key Length</label>
+                    <input type="number" class="form-control" name="keylen" value="32" min="8" max="128">
+                </div>
+                <div class="d-grid">
+                    <button class="btn btn-primary btn-lg" type="submit">
+                        <i class="fa-solid fa-lock"></i> Encrypt
+                    </button>
+                </div>
+            </form>
+
+            <hr>
+            <div class="text-center">
+                <a href="/decrypt" class="btn btn-outline-secondary">Go to Decrypt Page</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const fileInput = document.getElementById('fileUpload');
+fileInput.addEventListener('change', () => {
+    if(fileInput.files.length > 0){
+        Swal.fire({
+            icon: 'info',
+            title: 'File Selected!',
+            text: `${fileInput.files[0].name} ready for encryption`,
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }
+});
+
+const form = document.getElementById('encryptForm');
+form.addEventListener('submit', (e) => {
+    Swal.fire({
+        title: 'Encrypting...',
+        text: 'Please wait while your medical report is being encrypted.',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+});
+</script>
+{% endblock %}
