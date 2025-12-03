@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Decrypt Medical Report{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm p-4 mb-5">
+            <h2 class="text-center mb-4">Decrypt Medical Report</h2>
+
+            <form id="decryptForm" method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label">Encrypted Report</label>
+                    <input type="file" class="form-control" name="enc_file" id="encFile" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Encrypted Key</label>
+                    <input type="file" class="form-control" name="enc_key_file" id="encKeyFile" required>
+                </div>
+                <div class="d-grid">
+                    <button class="btn btn-success btn-lg" type="submit">
+                        <i class="fa-solid fa-key"></i> Decrypt
+                    </button>
+                </div>
+            </form>
+
+            <hr>
+            <div class="text-center">
+                <a href="/" class="btn btn-outline-secondary">Go to Encrypt Page</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const encFile = document.getElementById('encFile');
+const encKeyFile = document.getElementById('encKeyFile');
+
+function showFileAlert(fileInput, message){
+    fileInput.addEventListener('change', () => {
+        if(fileInput.files.length > 0){
+            Swal.fire({
+                icon: 'info',
+                title: 'File Selected!',
+                text: `${fileInput.files[0].name} ready for decryption`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+    });
+}
+
+showFileAlert(encFile, 'Encrypted Report selected');
+showFileAlert(encKeyFile, 'Encrypted Key selected');
+
+const form = document.getElementById('decryptForm');
+form.addEventListener('submit', (e) => {
+    Swal.fire({
+        title: 'Decrypting...',
+        text: 'Please wait while your medical report is being decrypted.',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+});
+</script>
+{% endblock %}

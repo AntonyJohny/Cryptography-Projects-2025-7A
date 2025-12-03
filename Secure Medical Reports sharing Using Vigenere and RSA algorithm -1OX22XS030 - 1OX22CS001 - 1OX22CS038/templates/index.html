@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Encrypt Medical Report{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
+        <h2 class="text-3xl font-bold text-center mb-6">Encrypt Medical Report</h2>
+
+        <form id="encryptForm" method="POST" enctype="multipart/form-data" class="space-y-4">
+            <!-- File Upload -->
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">Upload Medical Report</label>
+                <input type="file" name="file" id="fileUpload" required
+                    class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <small class="text-gray-500">Drag & drop or select a file (.txt, .pdf)</small>
+            </div>
+
+            <!-- Key Length -->
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">Vigenère Key Length</label>
+                <input type="number" name="keylen" value="32" min="8" max="128"
+                    class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+                <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-lock"></i> Encrypt
+                </button>
+            </div>
+        </form>
+
+        <hr class="my-6">
+
+        <div class="text-center">
+            <a href="/decrypt"
+               class="inline-block border border-gray-400 text-gray-700 px-6 py-2 rounded hover:bg-gray-100">
+               Go to Decrypt Page
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const fileInput = document.getElementById('fileUpload');
+if (fileInput) {
+  fileInput.addEventListener('change', () => {
+      if(fileInput.files.length > 0){
+          Swal.fire({
+              icon: 'info',
+              title: 'File Selected!',
+              text: `${fileInput.files[0].name} ready for encryption`,
+              timer: 2000,
+              showConfirmButton: false
+          });
+      }
+  });
+}
+
+const form = document.getElementById('encryptForm');
+if (form) {
+  form.addEventListener('submit', (e) => {
+      Swal.fire({
+          title: 'Encrypting...',
+          text: 'Please wait while your medical report is being encrypted.',
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+      });
+  });
+}
+</script>
+{% endblock %}
